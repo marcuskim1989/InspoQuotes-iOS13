@@ -49,14 +49,18 @@ class QuoteTableViewController: UITableViewController, SKPaymentTransactionObser
         let cell = tableView.dequeueReusableCell(withIdentifier: "QuoteCell", for: indexPath)
 
         if indexPath.row < quotesToShow.count {
-        
+            
             cell.textLabel?.text = quotesToShow[indexPath.row]
-
             cell.textLabel?.numberOfLines = 0
+            cell.textLabel?.textColor = #colorLiteral(red: 0.09244624525, green: 0.2105242908, blue: 0.2277826369, alpha: 1)
+            cell.accessoryType = .none
+            
         } else {
+            
             cell.textLabel?.text = "Get More Quotes"
             cell.textLabel?.textColor = #colorLiteral(red: 0.3225184083, green: 0.5193961859, blue: 0.5378621817, alpha: 1)
             cell.accessoryType = .disclosureIndicator
+            
         }
         return cell
     }
@@ -115,6 +119,9 @@ class QuoteTableViewController: UITableViewController, SKPaymentTransactionObser
     
     func showPremiumQuotes() {
         
+        quotesToShow.append(contentsOf: premiumQuotes)
+        
+        tableView.reloadData()
     }
     
     @IBAction func restorePressed(_ sender: UIBarButtonItem) {
