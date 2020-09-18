@@ -7,8 +7,11 @@
 //
 
 import UIKit
+import StoreKit
 
-class QuoteTableViewController: UITableViewController {
+class QuoteTableViewController: UITableViewController, SKPaymentTransactionObserver {
+   
+    let productID = "com.marcuskim.InspoQuotes.PremiumQuotes"
     
     var quotesToShow = [
         "Our greatest glory is not in never falling, but in rising every time we fall. — Confucius",
@@ -30,7 +33,8 @@ class QuoteTableViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
+        SKPaymentQueue.default().add(self)
     }
 
     // MARK: - Table view data source
@@ -72,6 +76,44 @@ class QuoteTableViewController: UITableViewController {
     //MARK: - in-app purchase methods
     
     func buyPremiumQuotes() {
+        if SKPaymentQueue.canMakePayments() {
+            
+            let paymentRequest = SKMutablePayment()
+            paymentRequest.productIdentifier = productID
+            SKPaymentQueue.default().add(paymentRequest)
+            
+            
+            
+        }else {
+            print("user can't make payments")
+        }
+    }
+    
+    func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
+        for transaction in transactions {
+            if transaction.transactionState == .purchased {
+                
+                print("Transaction successful")
+                
+                showPremiumQuotes()
+                
+                SKPaymentQueue.default().finishTransaction(transaction)
+                
+            } else if transaction.transactionState == .failed {
+                
+                if let error = transaction.error {
+                    let errorDescription = error.localizedDescription
+                    
+                    print("Transaction failed to due error: \(errorDescription)")
+                }
+                
+                SKPaymentQueue.default().finishTransaction(transaction)
+                
+            }
+        }
+       }
+    
+    func showPremiumQuotes() {
         
     }
     
