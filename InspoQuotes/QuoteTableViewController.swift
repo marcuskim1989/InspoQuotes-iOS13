@@ -10,7 +10,7 @@ import UIKit
 import StoreKit
 
 class QuoteTableViewController: UITableViewController, SKPaymentTransactionObserver {
-   
+    
     let productID = "com.marcuskim.InspoQuotes.PremiumQuotes"
     
     var quotesToShow = [
@@ -30,24 +30,32 @@ class QuoteTableViewController: UITableViewController, SKPaymentTransactionObser
         "Your true success in life begins only when you make the commitment to become excellent at what you do. — Brian Tracy",
         "Believe in yourself, take on your challenges, dig deep within yourself to conquer fears. Never let anyone bring you down. You got to keep going. – Chantal Sutherland"
     ]
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         SKPaymentQueue.default().add(self)
-    }
-
-    // MARK: - Table view data source
-
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
-        return quotesToShow.count + 1
+        if isPurchased() {
+            showPremiumQuotes()
+        }
+        
     }
-
+    
+    // MARK: - Table view data source
+    
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if isPurchased() {
+            return quotesToShow.count
+        } else {
+            return quotesToShow.count + 1
+        }
+    }
+    
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "QuoteCell", for: indexPath)
-
+        
         if indexPath.row < quotesToShow.count {
             
             cell.textLabel?.text = quotesToShow[indexPath.row]
@@ -58,15 +66,15 @@ class QuoteTableViewController: UITableViewController, SKPaymentTransactionObser
         } else {
             
             cell.textLabel?.text = "Get More Quotes"
-            cell.textLabel?.textColor = #colorLiteral(red: 0.3225184083, green: 0.5193961859, blue: 0.5378621817, alpha: 1)
+            cell.textLabel?.textColor = .none
             cell.accessoryType = .disclosureIndicator
             
         }
         return cell
     }
     
-
-   //MARK: - Table view delegate methods
+    
+    //MARK: - Table view delegate methods
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if indexPath.row == quotesToShow.count {
@@ -101,6 +109,8 @@ class QuoteTableViewController: UITableViewController, SKPaymentTransactionObser
                 
                 showPremiumQuotes()
                 
+                
+                
                 SKPaymentQueue.default().finishTransaction(transaction)
                 
             } else if transaction.transactionState == .failed {
@@ -113,20 +123,42 @@ class QuoteTableViewController: UITableViewController, SKPaymentTransactionObser
                 
                 SKPaymentQueue.default().finishTransaction(transaction)
                 
+            } else if transaction.transactionState == .restored {
+                showPremiumQuotes()
+                
+                print("Transaction Restored")
+                
+                navigationItem.setRightBarButton(nil, animated: true)
+                
+                SKPaymentQueue.default().finishTransaction(transaction)
             }
         }
-       }
-    
+    }
+      
     func showPremiumQuotes() {
+        UserDefaults.standard.set(true, forKey: productID)
         
         quotesToShow.append(contentsOf: premiumQuotes)
         
         tableView.reloadData()
     }
     
-    @IBAction func restorePressed(_ sender: UIBarButtonItem) {
+    func isPurchased() -> Bool {
+        let purchasesStatus = UserDefaults.standard.bool(forKey: productID)
         
+        if purchasesStatus {
+            print("Previously purchased")
+            return true
+        } else {
+            print("Never purchases")
+            return false
+        }
     }
-
-
+    
+    
+    @IBAction func restorePressed(_ sender: UIBarButtonItem) {
+        SKPaymentQueue.default().restoreCompletedTransactions()
+    }
+    
+    
 }
